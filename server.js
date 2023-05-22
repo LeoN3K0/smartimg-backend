@@ -12,12 +12,10 @@ const signin = require('./controllers/signin');
 
 const db = knex({
     client: 'pg',
-    connection: {
-        host : '127.0.0.1',
-        user : 'postgres',
-        password : 'left4dead2',
-        database : 'smartimg'
-    }
+        connection: 'postgres://LeoN3K0:61OAnQKhybpB@ep-frosty-mouse-963060-pooler.us-west-2.aws.neon.tech/smartimg?sslmode=require',
+        pool: {
+            min: 0
+        }
 });
 
 const app = express();

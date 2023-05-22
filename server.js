@@ -12,7 +12,7 @@ const signin = require('./controllers/signin');
 
 const db = knex({
     client: 'pg',
-        connection: 'postgres://LeoN3K0:61OAnQKhybpB@ep-frosty-mouse-963060-pooler.us-west-2.aws.neon.tech/smartimg?sslmode=require',
+        connection: process.env.DB_CONNECTION,
         pool: {
             min: 0
         }
@@ -30,5 +30,5 @@ app.put('/image', (req, res) => { image.handleImage(req, res, db) })
 app.post('/imageurl', (req, res) => { image.handleApiCall(req, res)})
 
 app.listen(3000, ()=> {
-    console.log('app is running on port 3000');
+    console.log('app is running');
 })

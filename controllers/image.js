@@ -1,26 +1,56 @@
-const Clarifai = require('clarifai');
+const { ClarifaiStub, grpc } = require("clarifai-nodejs-grpc");
 
-//You must add your own API key here from Clarifai.
-const app = new Clarifai.App({
-  apiKey: process.env.API_CLARIFAI
-});
+const stub = ClarifaiStub.grpc();
 
-const handleApiCall = (req, res) => {
-  app.models
-    .predict(
-      {
-        id: 'face-detection',
-        name: 'face-detection',
-        version: '6dc7e46bc9124c5c8824be4822abe105',
-        type: 'visual-detector',
-      }, this.state.input)
-      .then(data => {
-        res.json(data);
-      })
-      .catch(err => res.status(400).json('unable to work with API'))
+const PAT = process.env.PAT_CLARIFAI;
+const USER_ID = process.env.USERS_ID;
+const APP_ID = 'Smart-Brain-Face-ID';
+const MODEL_ID = 'face-detection';
+const MODEL_VERSION_ID = '45fb9a671625463fa646c3523a3087d5';
+
+const setClarifaiImage = (imageURL) => {
+  return IMAGE_URL = imageURL;
 }
 
- 
+// This will be used by every Clarifai endpoint call
+const metadata = new grpc.Metadata();
+metadata.set("authorization", "Key " + PAT);
+
+const handleApiCall = (req, res) => {
+  stub.PostModelOutputs(
+    {
+        user_app_id: {
+            "user_id": USER_ID,
+            "app_id": APP_ID
+        },
+        model_id: MODEL_ID,
+        version_id: MODEL_VERSION_ID, // This is optional. Defaults to the latest model version
+        inputs: [
+            { data: { image: { url: setClarifaiImage(req.body.input), allow_duplicate_url: true } } }
+        ]
+    },
+    metadata,
+    (err, response) => {
+        if (err) {
+            throw new Error(err);
+        }
+
+        if (response.status.code !== 10000) {
+            throw new Error("Post model outputs failed, status: " +response.status.description);
+        }
+
+        // Since we have one input, one output will exist here
+        const output = response.outputs[0];
+
+        console.log("Predicted concepts:");
+        for (const concept of output.data.concepts) {
+            console.log(concept.name + " " + concept.value);
+        }
+        res.json(response)
+    }
+
+  );
+} 
 
 const handleImage = (req, res, db) => {
     const { id } = req.body;
